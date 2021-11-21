@@ -1,6 +1,7 @@
 package fr.greg.ecfbdd;
 
 import fr.greg.ecfbdd.Entities.Groupe;
+import fr.greg.ecfbdd.Entities.Membre;
 import fr.greg.ecfbdd.Entities.Rencontre;
 import fr.greg.ecfbdd.utils.DataBaseController;
 import javafx.collections.FXCollections;
@@ -26,7 +27,7 @@ public class MainController implements Initializable {
     private TableColumn<?, ?> DateClmn;
 
     @FXML
-    private TableColumn<?, ?> FirstNameClmn;
+    private TableColumn<Membre, String> FirstNameClmn;
 
     @FXML
     private TableView<Groupe> GroupName;
@@ -56,7 +57,10 @@ public class MainController implements Initializable {
     private TableView<Rencontre> MeetClmn;
 
     @FXML
-    private TableColumn<?, ?> NameClmn;
+    private TableView<Membre> MemberList;
+
+    @FXML
+    private TableColumn<Membre, String> NameClmn;
 
     @FXML
     private Button SearchTitle;
@@ -77,7 +81,7 @@ public class MainController implements Initializable {
     private ComboBox<?> boxInstrument;
 
     @FXML
-    private ComboBox<?> boxMeet;
+    private ComboBox<String> boxMeet;
 
     @FXML
     private ComboBox<String> boxMeetGroup;
@@ -86,7 +90,7 @@ public class MainController implements Initializable {
     private TextField boxNbGroup;
 
     @FXML
-    private ComboBox<?> boxSpeciality;
+    private ComboBox<String> boxSpeciality;
 
     @FXML
     private TextField boxTime;
@@ -117,8 +121,10 @@ public class MainController implements Initializable {
 
     ObservableList<Groupe> nomGroupeList = FXCollections.observableArrayList();
     ObservableList<Rencontre> nomRencontreList = FXCollections.observableArrayList();
+    ObservableList<Membre> MembreList = FXCollections.observableArrayList();
 
-    // Méthodes de remplissages de comboBox
+
+    // Méthodes de remplissages de la 1e comboBox
     private void RemplissageComboBoxTitre1() {
 
         LinkedList<String> combo = new LinkedList<>();
@@ -186,8 +192,52 @@ public class MainController implements Initializable {
             System.out.println("ERREUR DANS LA REQUETE affichageGroupe");
         }
     }
+    //Remplissage de la 4e comboBox
+    private void RemplissageComboBoxSpeciality() {
 
+        LinkedList<String> combo = new LinkedList<>();
 
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+
+        String query = "call affichageSpec";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+
+                combo.add(rs.getString("nom_specialite"));
+            }
+            boxSpeciality.getItems().addAll(combo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE affichageSpecialite");
+        }
+    }
+//Remplissage de la 5e comboBox
+private void RemplissageComboBoxMeet() {
+
+    LinkedList<String> combo = new LinkedList<>();
+
+    DataBaseController dataBaseController = new DataBaseController();
+    Connection connection = dataBaseController.getConnection();
+
+    String query = "call affichageRencontre";
+    try {
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery(query);
+        while (rs.next()) {
+
+            combo.add(rs.getString("nom_rencontre"));
+        }
+        boxMeet.getItems().addAll(combo);
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("ERREUR DANS LA REQUETE affichageRencontre");
+    }
+}
+
+//ObsList 1ere interro
 @FXML
 private ObservableList<Groupe> RemplissageTViewGroupName(ActionEvent event) throws SQLException {
 
@@ -197,7 +247,7 @@ private ObservableList<Groupe> RemplissageTViewGroupName(ActionEvent event) thro
     DataBaseController dataBaseController = new DataBaseController();
     Connection connection = dataBaseController.getConnection();
     String query = "call DENOMINATION_GROUPE(?)";
-    CallableStatement cs = (CallableStatement) connection.prepareCall(query);
+    CallableStatement cs = connection.prepareCall(query);
 
     cs.setString (1, res);
     cs.execute();
@@ -210,16 +260,17 @@ private ObservableList<Groupe> RemplissageTViewGroupName(ActionEvent event) thro
         }
     }catch (Exception e) {
         e.printStackTrace();
-        System.out.println("Erreur dans la requete nomGroupe");
+        System.out.println("ERREUR DANS LA REQUETE nomGroupe");
     }
     connection.close();
     return nomGroupeList;
-}
+}//Affichage 1ere interrogation
+
     public void AffichageGroupName() {
         GrpNameClmn.setCellValueFactory(new PropertyValueFactory<Groupe, String>("nomGroupe"));
         GroupName.setItems(nomGroupeList);
     }
-
+//ObsList 2e interro
     @FXML
     private ObservableList<Rencontre> RemplissageTViewMeetByTitleAndGroup(ActionEvent event) throws SQLException {
 
@@ -230,7 +281,7 @@ private ObservableList<Groupe> RemplissageTViewGroupName(ActionEvent event) thro
         DataBaseController dataBaseController = new DataBaseController();
         Connection connection = dataBaseController.getConnection();
         String query = "call NOM_RENCONTRE(?, ?)";
-        CallableStatement cs = (CallableStatement) connection.prepareCall(query);
+        CallableStatement cs = connection.prepareCall(query);
 
         cs.setString(1,res);
         cs.setString(2, res2);
@@ -244,24 +295,72 @@ private ObservableList<Groupe> RemplissageTViewGroupName(ActionEvent event) thro
             }
         }catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Erreur dans la requete nomRencontre");
+            System.out.println("ERREUR DANS LA REQUETE nomRencontre");
         }
         connection.close();
         return nomRencontreList;
     }
 
-
+//Affichage 2e interrogation
     public void  AffichageMeetByTitleAndGroup() {
         Meet.setCellValueFactory(new PropertyValueFactory<Rencontre, String>("nomRencontre"));
         MeetClmn.setItems(nomRencontreList);
     }
 
+    //ObsList 3e interro
+@FXML
+private ObservableList<Membre> RemplissageMembreParRencontreSpecialite() throws SQLException {
+
+    String res = boxSpeciality.getValue();
+    String res2 = boxMeet.getValue();
+    MembreList.clear();
+
+    DataBaseController dataBaseController = new DataBaseController();
+    Connection connection = dataBaseController.getConnection();
+    String query = "call NOM_MEMBRE(?, ?)";
+    CallableStatement cs = connection.prepareCall(query);
+
+    cs.setString(1,res);
+    cs.setString(2, res2);
+    cs.execute();
+    try{
+        ResultSet rs = cs.getResultSet();
+        while (rs.next()) {
+            Membre membre = new Membre();
+            membre.setNomMembre(rs.getString("NOM_MEMBRE"));
+            membre.setPrenomMembre(rs.getString ("PRENOM_MEMBRE"));
+            MembreList.add(membre);
+        }
+    }catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("ERREUR DANS LA REQUETE nomMembre");
+    }
+    connection.close();
+    return MembreList;
+}
+    public void AffichageMemberByMeetAndSpeciality() {
+        FirstNameClmn.setCellValueFactory(new PropertyValueFactory<Membre, String>("prenomMembre"));
+        NameClmn.setCellValueFactory(new PropertyValueFactory<Membre, String>("nomMembre"));
+        MemberList.setItems(MembreList);
+
+    }
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-    RemplissageComboBoxTitre1();
-    AffichageGroupName();
-    RemplissageComboBoxTitre2();
-    RemplissageComboBoxGroup();
-    AffichageMeetByTitleAndGroup();
+        try {
+            RemplissageComboBoxTitre1();
+            AffichageGroupName();
+            RemplissageComboBoxTitre2();
+            RemplissageComboBoxGroup();
+            AffichageMeetByTitleAndGroup();
+            RemplissageComboBoxSpeciality();
+            RemplissageComboBoxMeet();
+            RemplissageMembreParRencontreSpecialite();
+            AffichageMemberByMeetAndSpeciality();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 }
