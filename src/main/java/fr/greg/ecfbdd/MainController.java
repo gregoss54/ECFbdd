@@ -3,6 +3,7 @@ package fr.greg.ecfbdd;
 import fr.greg.ecfbdd.Entities.Groupe;
 import fr.greg.ecfbdd.Entities.Membre;
 import fr.greg.ecfbdd.Entities.Rencontre;
+import fr.greg.ecfbdd.Entities.Titre;
 import fr.greg.ecfbdd.utils.DataBaseController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -31,7 +32,6 @@ public class MainController implements Initializable {
 
     @FXML
     private TableView<Groupe> GroupName;
-
     @FXML
     private TableColumn<Groupe, String> GrpNameClmn;
 
@@ -43,12 +43,13 @@ public class MainController implements Initializable {
 
     @FXML
     private TableColumn<Rencontre, String> Meet;
-
+    @FXML
+    private TableView<Rencontre> Meet3;
     @FXML
     private TableColumn<?, ?> Meet2Clmn;
 
     @FXML
-    private TableColumn<?, ?> Meet3Clmn;
+    private TableColumn<Rencontre, String> Meet3Clmn;
 
     @FXML
     private TableColumn<?, ?> Meet4Clmn;
@@ -63,22 +64,19 @@ public class MainController implements Initializable {
     private TableColumn<Membre, String> NameClmn;
 
     @FXML
-    private Button SearchTitle;
+    private TableColumn<Titre, String> TitleClmn;
 
     @FXML
-    private TableColumn<?, ?> TitleClmn;
+    private ComboBox<String> boxAddress;
 
     @FXML
-    private ComboBox<?> boxAddress;
+    private ComboBox<String> boxCountry;
 
     @FXML
-    private ComboBox<?> boxCountry;
+    private ComboBox<String> boxGroup;
 
     @FXML
-    private ComboBox<?> boxGroup;
-
-    @FXML
-    private ComboBox<?> boxInstrument;
+    private ComboBox<String> boxInstrument;
 
     @FXML
     private ComboBox<String> boxMeet;
@@ -87,13 +85,13 @@ public class MainController implements Initializable {
     private ComboBox<String> boxMeetGroup;
 
     @FXML
-    private TextField boxNbGroup;
+    private TextField TFNbGroup;
 
     @FXML
     private ComboBox<String> boxSpeciality;
 
     @FXML
-    private TextField boxTime;
+    private TextField TFTime;
 
     @FXML
     private ComboBox<String> boxTitle;
@@ -101,6 +99,8 @@ public class MainController implements Initializable {
     @FXML
     private ComboBox<String> boxTitleGroup;
 
+    @FXML
+    private Button SearchTitle;
     @FXML
     private Button searchGroup;
 
@@ -122,9 +122,13 @@ public class MainController implements Initializable {
     ObservableList<Groupe> nomGroupeList = FXCollections.observableArrayList();
     ObservableList<Rencontre> nomRencontreList = FXCollections.observableArrayList();
     ObservableList<Membre> MembreList = FXCollections.observableArrayList();
+    ObservableList<Titre> TitreList = FXCollections.observableArrayList();
+    ObservableList<Rencontre> nomRencontre2List = FXCollections.observableArrayList();
+    ObservableList<Rencontre> Planning = FXCollections.observableArrayList();
 
+    // PREMIERE INTERROGATION
 
-    // Méthodes de remplissages de la 1e comboBox
+    // Méthodes de remplissage de la 1e comboBox
     private void RemplissageComboBoxTitre1() {
 
         LinkedList<String> combo = new LinkedList<>();
@@ -146,31 +150,32 @@ public class MainController implements Initializable {
             System.out.println("ERREUR DANS LA REQUETE");
         }
     }
+    //DEUXIEME INTERROGATION
+
+    //Remplissage de la 1e comboBox
+    private void RemplissageComboBoxTitre2() {
+
+        LinkedList<String> combo = new LinkedList<>();
+
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+
+        String query = "call affichageTitre";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+
+                combo.add(rs.getString("nom_titre"));
+            }
+            boxTitle.getItems().addAll(combo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE affichageTitre");
+        }
+    }
 
     //Remplissage de la 2e comboBox
-        private void RemplissageComboBoxTitre2() {
-
-            LinkedList<String> combo = new LinkedList<>();
-
-            DataBaseController dataBaseController = new DataBaseController();
-            Connection connection = dataBaseController.getConnection();
-
-            String query = "call affichageTitre";
-            try {
-                Statement statement = connection.createStatement();
-                ResultSet rs = statement.executeQuery(query);
-                while (rs.next()) {
-
-                    combo.add(rs.getString("nom_titre"));
-                }
-                boxTitle.getItems().addAll(combo);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("ERREUR DANS LA REQUETE affichageTitre");
-            }
-        }
-
-        //Remplissage de la 3e comboBox
     private void RemplissageComboBoxGroup() {
 
         LinkedList<String> combo = new LinkedList<>();
@@ -192,7 +197,9 @@ public class MainController implements Initializable {
             System.out.println("ERREUR DANS LA REQUETE affichageGroupe");
         }
     }
-    //Remplissage de la 4e comboBox
+    //TROISIEME INTERROGATION
+
+    //Remplissage de la 1e comboBox
     private void RemplissageComboBoxSpeciality() {
 
         LinkedList<String> combo = new LinkedList<>();
@@ -214,63 +221,70 @@ public class MainController implements Initializable {
             System.out.println("ERREUR DANS LA REQUETE affichageSpecialite");
         }
     }
-//Remplissage de la 5e comboBox
-private void RemplissageComboBoxMeet() {
 
-    LinkedList<String> combo = new LinkedList<>();
+    //Remplissage de la 2e comboBox
+    private void RemplissageComboBoxMeet() {
 
-    DataBaseController dataBaseController = new DataBaseController();
-    Connection connection = dataBaseController.getConnection();
+        LinkedList<String> combo = new LinkedList<>();
 
-    String query = "call affichageRencontre";
-    try {
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery(query);
-        while (rs.next()) {
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
 
-            combo.add(rs.getString("nom_rencontre"));
+        String query = "call affichageRencontre";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+
+                combo.add(rs.getString("nom_rencontre"));
+            }
+            boxMeet.getItems().addAll(combo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE affichageRencontre");
         }
-        boxMeet.getItems().addAll(combo);
-    } catch (Exception e) {
-        e.printStackTrace();
-        System.out.println("ERREUR DANS LA REQUETE affichageRencontre");
     }
-}
 
+    //OBSERVABLES LISTES
 //ObsList 1ere interro
-@FXML
-private ObservableList<Groupe> RemplissageTViewGroupName(ActionEvent event) throws SQLException {
+    @FXML
+    private ObservableList<Groupe> RemplissageTViewGroupName(ActionEvent event) throws SQLException {
 
         String res = boxTitleGroup.getValue();
         nomGroupeList.clear();
 
-    DataBaseController dataBaseController = new DataBaseController();
-    Connection connection = dataBaseController.getConnection();
-    String query = "call DENOMINATION_GROUPE(?)";
-    CallableStatement cs = connection.prepareCall(query);
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+        String query = "call DENOMINATION_GROUPE(?)";
+        CallableStatement cs = connection.prepareCall(query);
 
-    cs.setString (1, res);
-    cs.execute();
-    try{
-        ResultSet rs = cs.getResultSet();
-        while (rs.next()) {
-            Groupe groupe = new Groupe();
-            groupe.setNomGroupe(rs.getString("nomGroupe"));
-            nomGroupeList.add(groupe);
+        cs.setString(1, res);
+        cs.execute();
+        try {
+            ResultSet rs = cs.getResultSet();
+            while (rs.next()) {
+                Groupe groupe = new Groupe();
+                groupe.setNomGroupe(rs.getString("nomGroupe"));
+                nomGroupeList.add(groupe);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE nomGroupe");
         }
-    }catch (Exception e) {
-        e.printStackTrace();
-        System.out.println("ERREUR DANS LA REQUETE nomGroupe");
-    }
-    connection.close();
-    return nomGroupeList;
-}//Affichage 1ere interrogation
+        connection.close();
+        return nomGroupeList;
+
+
+        //AFFICHAGES DISPLAY TABLE VIEW
+    }//Affichage 1ere interrogation
 
     public void AffichageGroupName() {
         GrpNameClmn.setCellValueFactory(new PropertyValueFactory<Groupe, String>("nomGroupe"));
         GroupName.setItems(nomGroupeList);
     }
-//ObsList 2e interro
+
+
+    //ObsList 2e interrogation
     @FXML
     private ObservableList<Rencontre> RemplissageTViewMeetByTitleAndGroup(ActionEvent event) throws SQLException {
 
@@ -283,17 +297,17 @@ private ObservableList<Groupe> RemplissageTViewGroupName(ActionEvent event) thro
         String query = "call NOM_RENCONTRE(?, ?)";
         CallableStatement cs = connection.prepareCall(query);
 
-        cs.setString(1,res);
+        cs.setString(1, res);
         cs.setString(2, res2);
         cs.execute();
-        try{
+        try {
             ResultSet rs = cs.getResultSet();
             while (rs.next()) {
                 Rencontre rencontre = new Rencontre();
                 rencontre.setNomRencontre(rs.getString("Rencontre"));
                 nomRencontreList.add(rencontre);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("ERREUR DANS LA REQUETE nomRencontre");
         }
@@ -301,49 +315,205 @@ private ObservableList<Groupe> RemplissageTViewGroupName(ActionEvent event) thro
         return nomRencontreList;
     }
 
-//Affichage 2e interrogation
-    public void  AffichageMeetByTitleAndGroup() {
+    //Affichage 2e interrogation
+    public void AffichageMeetByTitleAndGroup() {
         Meet.setCellValueFactory(new PropertyValueFactory<Rencontre, String>("nomRencontre"));
         MeetClmn.setItems(nomRencontreList);
     }
 
     //ObsList 3e interro
-@FXML
-private ObservableList<Membre> RemplissageMembreParRencontreSpecialite() throws SQLException {
+    @FXML
+    private ObservableList<Membre> RemplissageMembreParRencontreSpecialite() throws SQLException {
 
-    String res = boxSpeciality.getValue();
-    String res2 = boxMeet.getValue();
-    MembreList.clear();
+        String res = boxSpeciality.getValue();
+        String res2 = boxMeet.getValue();
+        MembreList.clear();
 
-    DataBaseController dataBaseController = new DataBaseController();
-    Connection connection = dataBaseController.getConnection();
-    String query = "call NOM_MEMBRE(?, ?)";
-    CallableStatement cs = connection.prepareCall(query);
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+        String query = "call NOM_MEMBRE(?, ?)";
+        CallableStatement cs = connection.prepareCall(query);
 
-    cs.setString(1,res);
-    cs.setString(2, res2);
-    cs.execute();
-    try{
-        ResultSet rs = cs.getResultSet();
-        while (rs.next()) {
-            Membre membre = new Membre();
-            membre.setNomMembre(rs.getString("NOM_MEMBRE"));
-            membre.setPrenomMembre(rs.getString ("PRENOM_MEMBRE"));
-            MembreList.add(membre);
+        cs.setString(1, res);
+        cs.setString(2, res2);
+        cs.execute();
+        try {
+            ResultSet rs = cs.getResultSet();
+            while (rs.next()) {
+                Membre membre = new Membre();
+                membre.setNomMembre(rs.getString("NOM_MEMBRE"));
+                membre.setPrenomMembre(rs.getString("PRENOM_MEMBRE"));
+                MembreList.add(membre);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE nomMembre");
         }
-    }catch (Exception e) {
-        e.printStackTrace();
-        System.out.println("ERREUR DANS LA REQUETE nomMembre");
+        connection.close();
+        return MembreList;
     }
-    connection.close();
-    return MembreList;
-}
+
     public void AffichageMemberByMeetAndSpeciality() {
         FirstNameClmn.setCellValueFactory(new PropertyValueFactory<Membre, String>("prenomMembre"));
         NameClmn.setCellValueFactory(new PropertyValueFactory<Membre, String>("nomMembre"));
         MemberList.setItems(MembreList);
 
     }
+    //4e Interrogation
+    //Remplissage TextField Duree et comboBox Pays
+
+    /*public void RemplissageTFTime() {
+        ObservableList<Time> list = TFTime();
+        TFTime.setCellValueFactory(new PropertyValueFactory<Time, Integer>)
+
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+
+    }
+
+     */
+
+    private void RemplissageComboPays() {
+        LinkedList<String> combo = new LinkedList<>();
+
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+
+        String query = "call affichagePays";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+
+                combo.add(rs.getString("nom_pays"));
+            }
+            boxCountry.getItems().addAll(combo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE nom_pays");
+        }
+    }
+
+
+//ObsList 4e interrogation
+    // @FXML
+    //private void ObservableList<Titre>RemplissageParDureePays(ActionEvent event) throws SQLException(
+
+    private void RemplissageComboInstruments() {
+        LinkedList<String> combo = new LinkedList<>();
+
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+
+        String query = "call affichageInstru";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+
+                combo.add(rs.getString("nom_instrument"));
+            }
+            boxInstrument.getItems().addAll(combo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE nom_instrument");
+        }
+    }
+
+    //Obslist 6e interrogation
+    @FXML
+    ObservableList<Rencontre> RemplissageRencontreParInstrument() throws SQLException {
+
+        String res = boxInstrument.getValue();
+        nomRencontre2List.clear();
+
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+        String query = "call RENCONTRE_INSTRUMENTS(?)";
+        CallableStatement cs = connection.prepareCall(query);
+
+        cs.setString(1, res);
+        cs.execute();
+        try {
+            ResultSet rs = cs.getResultSet();
+            while (rs.next()) {
+                Rencontre rencontre = new Rencontre();
+                rencontre.setNomRencontre(rs.getString("NOM_RENCONTRE"));
+                nomRencontre2List.add(rencontre);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE nomRencontre");
+        }
+        connection.close();
+        return nomRencontre2List;
+    }
+
+    private void AffichageRencontreParInstrument() {
+        Meet3Clmn.setCellValueFactory(new PropertyValueFactory<Rencontre, String>("nomRencontre"));
+        Meet3.setItems(nomRencontre2List);
+    }
+
+    private void RemplissageComboLieuRencontre() {
+        LinkedList<String> combo = new LinkedList<>();
+
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+
+        String query = "call affichageLieuRencontre";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+
+                combo.add(rs.getString("lieu_rencontre"));
+            }
+            boxAddress.getItems().addAll(combo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE nom_lieu_rencontre");
+        }
+    }
+
+    private void RemplissageComboGroup() {
+
+        LinkedList<String> combo = new LinkedList<>();
+
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+
+        String query = "call affichageGroupe";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+
+                combo.add(rs.getString("DENOMINATION_GROUPE"));
+            }
+            boxGroup.getItems().addAll(combo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERREUR DANS LA REQUETE affichageGroupe");
+        }
+    }
+//Affichage de la 7e interrogation
+
+    @FXML
+    void AffichagePlanning() throws SQLException {
+
+        String res = boxInstrument.getValue();
+        Planning.clear();
+
+        DataBaseController dataBaseController = new DataBaseController();
+        Connection connection = dataBaseController.getConnection();
+        String query = "call Planning(?)";
+        CallableStatement cs = connection.prepareCall(query);
+
+    }
+
+
+
+
 
 
     @Override
@@ -358,6 +528,13 @@ private ObservableList<Membre> RemplissageMembreParRencontreSpecialite() throws 
             RemplissageComboBoxMeet();
             RemplissageMembreParRencontreSpecialite();
             AffichageMemberByMeetAndSpeciality();
+            RemplissageComboPays();
+            RemplissageComboInstruments();
+            RemplissageComboLieuRencontre();
+            RemplissageComboGroup();
+            RemplissageRencontreParInstrument();
+            AffichageRencontreParInstrument();
+            AffichagePlanning();
         } catch (SQLException e) {
             e.printStackTrace();
         }

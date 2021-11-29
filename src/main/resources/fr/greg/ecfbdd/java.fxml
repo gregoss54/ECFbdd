@@ -53,7 +53,7 @@
          <font>
             <Font name="Arial Black" size="12.0" />
          </font></Label>
-        <TextField fx:id="boxTime" layoutX="281.0" layoutY="433.0" prefHeight="26.0" prefWidth="63.0" text="temps">
+        <TextField fx:id="TFTime" layoutX="281.0" layoutY="433.0" prefHeight="26.0" prefWidth="63.0" text="temps">
          <font>
             <Font name="Arial Black" size="12.0" />
          </font></TextField>
@@ -81,7 +81,7 @@
          <font>
             <Font name="Arial Black" size="12.0" />
          </font></Label>
-        <TextField fx:id="boxNbGroup" layoutX="312.0" layoutY="537.0" prefHeight="26.0" prefWidth="81.0" text="Nb Groupe">
+        <TextField fx:id="TFNbGroup" layoutX="312.0" layoutY="537.0" prefHeight="26.0" prefWidth="81.0" text="Nb Groupe">
          <font>
             <Font name="Arial Black" size="12.0" />
          </font></TextField>
@@ -105,7 +105,7 @@
          <font>
             <Font name="Arial Black" size="10.0" />
          </font></Button>
-        <Button fx:id="searchMeetInstru" layoutX="478.0" layoutY="624.0" mnemonicParsing="false" text="Chercher">
+        <Button fx:id="searchMeetInstru" layoutX="478.0" layoutY="624.0" mnemonicParsing="false" onAction="#RemplissageRencontreParInstrument" text="Chercher">
          <font>
             <Font name="Arial Black" size="10.0" />
          </font></Button>
@@ -140,7 +140,7 @@
           <TableColumn fx:id="Meet2Clmn" prefWidth="377.0" style="-fx-alignment: center;" text="Rencontres" />
         </columns>
       </TableView>
-      <TableView layoutX="805.0" layoutY="593.0" prefHeight="90.0" prefWidth="370.0">
+      <TableView fx:id="Meet3" layoutX="805.0" layoutY="593.0" prefHeight="90.0" prefWidth="370.0">
         <columns>
           <TableColumn fx:id="Meet3Clmn" prefWidth="369.0" style="-fx-alignment: center;" text="Rencontres" />
         </columns>
