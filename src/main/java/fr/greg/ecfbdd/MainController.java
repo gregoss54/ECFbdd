@@ -510,11 +510,7 @@ public class MainController implements Initializable {
         CallableStatement cs = connection.prepareCall(query);
 
     }
-
-
-
-
-
+// Planning à confirmer dans la tableview(pb d'affichage mais query bonne)
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
